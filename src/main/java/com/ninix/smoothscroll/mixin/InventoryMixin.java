@@ -1,5 +1,7 @@
 package com.ninix.smoothscroll.mixin;
 
+import com.ninix.smoothscroll.Rollover;
+import com.ninix.smoothscroll.Config;
 import com.ninix.smoothscroll.Smooth;
 import net.minecraft.world.entity.player.Inventory;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,13 +17,17 @@ public class InventoryMixin {
 
     @Inject(method = "swapPaint", at = @At("HEAD"))
     private void swapPaint(double direction, CallbackInfo ci) {
+        if (!Config.rollover) {
+            return;
+        }
+
         double step = Math.signum(direction);
 
         if (selected - step < 0) {
-            Smooth.hotbarRollover++;
+            Rollover.steps++;
         }
         if (selected - step > 8) {
-            Smooth.hotbarRollover--;
+            Rollover.steps--;
         }
     }
 }

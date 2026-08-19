@@ -1,5 +1,6 @@
 package com.ninix.smoothscroll.mixin;
 
+import com.ninix.smoothscroll.Config;
 import com.ninix.smoothscroll.Creative;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import org.spongepowered.asm.mixin.Mixin;

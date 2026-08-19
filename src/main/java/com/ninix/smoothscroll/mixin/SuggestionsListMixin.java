@@ -1,5 +1,6 @@
 package com.ninix.smoothscroll.mixin;
 
+import com.ninix.smoothscroll.Config;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.ninix.smoothscroll.Smooth;
 import net.minecraft.client.gui.GuiGraphics;
@@ -33,7 +34,7 @@ public class SuggestionsListMixin {
 
     @Inject(method = "render", at = @At("HEAD"))
     private void renderHead(GuiGraphics graphics, int mouseX, int mouseY, CallbackInfo ci) {
-        scrollPixels = Smooth.decay(scrollPixels, Smooth.CHAT);
+        scrollPixels = Smooth.decay(scrollPixels, Config.chat);
         offset = Smooth.clamp(targetOffset - scrollOffset() / LINE, 0, Math.max(0, suggestionList.size() - 10));
     }
 

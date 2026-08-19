@@ -1,5 +1,6 @@
 package com.ninix.smoothscroll.mixin;
 
+import com.ninix.smoothscroll.Config;
 import com.ninix.smoothscroll.Creative;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -47,7 +48,7 @@ public abstract class CreativeModeInventoryScreenMixin
                 "textures/gui/container/creative_inventory/tab_" + selectedTab.getBackgroundSuffix());
 
         int x = leftPos + GRID_U;
-        int y = topPos + GRID_V + 1;
+        int y = topPos + GRID_V;
         int shift = Creative.drawOffset();
 
         graphics.enableScissor(x, y + 1, x + GRID_WIDTH, y + GRID_HEIGHT - 1);

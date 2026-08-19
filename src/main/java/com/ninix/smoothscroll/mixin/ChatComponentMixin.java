@@ -1,10 +1,12 @@
 package com.ninix.smoothscroll.mixin;
 
+import com.ninix.smoothscroll.Config;
 import com.ninix.smoothscroll.Smooth;
 import net.minecraft.client.GuiMessage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -45,19 +47,17 @@ public abstract class ChatComponentMixin {
     private void renderHead(GuiGraphics graphics, int tickCount, int mouseX, int mouseY, CallbackInfo ci) {
         canvas = graphics;
         savedTick = tickCount;
-        scrollPixels = Smooth.decay(scrollPixels, Smooth.CHAT);
+        scrollPixels = Smooth.decay(scrollPixels, Config.chat);
         scrollBefore = chatScrollbarPos;
-        chatScrollbarPos -= scrollOffset() / getLineHeight();
 
-        if (chatScrollbarPos < 0) {
-            chatScrollbarPos = 0;
-        }
+        int maxScroll = Math.max(0, trimmedMessages.size() - getLinesPerPage());
+        chatScrollbarPos = Mth.clamp(chatScrollbarPos - scrollOffset() / getLineHeight(), 0, maxScroll);
     }
 
     @ModifyArg(method = "render", index = 1, at = @At(value = "INVOKE",
             target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 0))
     private float smoothOpening(float y) {
-        matrixY = Smooth.approach(matrixY, y, Smooth.CHAT_OPENING);
+        matrixY = Smooth.approach(matrixY, y, Config.chatOpening);
         return Math.round(matrixY);
     }
 
@@ -75,7 +75,7 @@ public abstract class ChatComponentMixin {
         }
 
         int target = shownLines * getLineHeight();
-        maskHeight = Smooth.approach(maskHeight, target, Smooth.CHAT_OPENING);
+        maskHeight = Smooth.approach(maskHeight, target, Config.chatOpening);
 
         int top = bottom - Math.round(maskHeight);
         int cut = bottom;

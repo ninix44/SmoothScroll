@@ -1,5 +1,6 @@
 package com.ninix.smoothscroll.mixin;
 
+import com.ninix.smoothscroll.Config;
 import com.ninix.smoothscroll.Smooth;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
@@ -22,6 +23,7 @@ public abstract class AbstractSelectionListMixin {
     @Unique private double smoothAmount;
     @Unique private double targetAmount;
     @Unique private double amountBefore;
+    @Unique private double targetBefore;
     @Unique private boolean mouseScrolling;
     @Unique private boolean active;
 
@@ -36,7 +38,7 @@ public abstract class AbstractSelectionListMixin {
     @Inject(method = "render", at = @At("HEAD"), require = 0)
     private void renderHead(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         active = true;
-        smoothAmount = Smooth.approach(smoothAmount, targetAmount, Smooth.LIST);
+        smoothAmount = Smooth.approach(smoothAmount, targetAmount, Config.list);
         scrollAmount = Math.round(smoothAmount);
     }
 
@@ -48,6 +50,7 @@ public abstract class AbstractSelectionListMixin {
 
         mouseScrolling = true;
         amountBefore = scrollAmount;
+        targetBefore = targetAmount;
         scrollAmount = targetAmount;
     }
 
@@ -57,7 +60,9 @@ public abstract class AbstractSelectionListMixin {
             return;
         }
 
-        targetAmount = Mth.clamp(scrollAmount, 0.0D, getMaxScroll());
+        targetAmount = Config.listSpeed == 0.0D
+                ? Mth.clamp(scrollAmount, 0.0D, getMaxScroll())
+                : Mth.clamp(targetBefore - amount * Config.listSpeed, 0.0D, getMaxScroll());
         scrollAmount = amountBefore;
         mouseScrolling = false;
     }

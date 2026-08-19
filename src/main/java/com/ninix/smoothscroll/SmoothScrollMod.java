@@ -6,4 +6,8 @@ import net.minecraftforge.fml.common.Mod;
 public class SmoothScrollMod {
 
     public static final String MOD_ID = "smoothscroll";
+
+    public SmoothScrollMod() {
+        Config.load();
+    }
 }

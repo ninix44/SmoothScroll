@@ -9,14 +9,6 @@ import org.joml.Vector3f;
 @UtilityClass
 public class Smooth {
 
-    public final float CHAT = 0.5F;
-    public final float CHAT_OPENING = 0.5F;
-    public final float HOTBAR = 0.2F;
-    public final float LIST = 0.5F;
-    public final float CREATIVE = 0.5F;
-
-    public int hotbarRollover;
-
     public float decay(float value, float smoothness) {
         float decayed = (float) (value * Math.pow(smoothness, frameTime()));
         return Math.abs(decayed) < 0.5F ? 0.0F : decayed;

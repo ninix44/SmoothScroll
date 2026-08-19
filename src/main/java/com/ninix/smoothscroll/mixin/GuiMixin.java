@@ -1,5 +1,7 @@
 package com.ninix.smoothscroll.mixin;
 
+import com.ninix.smoothscroll.Rollover;
+import com.ninix.smoothscroll.Config;
 import com.ninix.smoothscroll.Smooth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -31,15 +33,17 @@ public class GuiMixin {
         }
 
         int selected = player.getInventory().selected;
-        int target = (selected - Smooth.hotbarRollover * 9) * SLOT - Smooth.hotbarRollover * EDGE;
-        slotPixels = Smooth.approach(slotPixels, target, Smooth.HOTBAR);
+        int target = (selected - Rollover.steps * 9) * SLOT - Rollover.steps * EDGE;
+        slotPixels = Smooth.approach(slotPixels, target, Config.hotbar);
 
-        if (Math.round(slotPixels) < -10 - EDGE) {
-            slotPixels += 9 * SLOT + EDGE;
-            Smooth.hotbarRollover--;
-        } else if (Math.round(slotPixels) > SLOT * 9 - 10 + EDGE) {
-            slotPixels -= 9 * SLOT + EDGE;
-            Smooth.hotbarRollover++;
+        if (Config.rollover) {
+            if (Math.round(slotPixels) < -10 - EDGE) {
+                slotPixels += 9 * SLOT + EDGE;
+                Rollover.steps--;
+            } else if (Math.round(slotPixels) > SLOT * 9 - 10 + EDGE) {
+                slotPixels -= 9 * SLOT + EDGE;
+                Rollover.steps++;
+            }
         }
 
         int shifted = x - selected * SLOT + Math.round(slotPixels);

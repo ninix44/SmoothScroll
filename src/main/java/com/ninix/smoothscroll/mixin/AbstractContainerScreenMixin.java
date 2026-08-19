@@ -1,5 +1,6 @@
 package com.ninix.smoothscroll.mixin;
 
+import com.ninix.smoothscroll.Config;
 import com.ninix.smoothscroll.Creative;
 import com.ninix.smoothscroll.ItemListContainer;
 import com.ninix.smoothscroll.Smooth;
@@ -14,6 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = AbstractContainerScreen.class, priority = 999)
@@ -23,11 +25,22 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
     @Final @Shadow protected T menu;
 
+    @Shadow protected int topPos;
+
     @Shadow private void renderSlot(GuiGraphics graphics, Slot slot) { throw new AssertionError(); }
 
     @Unique private boolean masked;
     @Unique private boolean drawingExtra;
     @Unique private int slotsDrawn;
+
+    @ModifyVariable(method = "render", at = @At("HEAD"), argsOnly = true, ordinal = 1)
+    private int shiftMouse(int mouseY) {
+        if (picker() == null || Creative.scrollOffset() == 0) {
+            return mouseY;
+        }
+
+        return mouseY >= topPos + 18 && mouseY <= topPos + 108 ? mouseY - Creative.drawOffset() : mouseY;
+    }
 
     @Inject(method = "render", at = @At("HEAD"))
     private void renderHead(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
@@ -36,7 +49,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
             return;
         }
 
-        Creative.scrollPixels = Smooth.decay(Creative.scrollPixels, Smooth.CREATIVE);
+        Creative.scrollPixels = Smooth.decay(Creative.scrollPixels, Config.creative);
 
         Creative.applying = true;
         picker.scrollTo(((ItemPickerMenuAccessor) picker).callGetScrollForRowIndex(shownRow()));
