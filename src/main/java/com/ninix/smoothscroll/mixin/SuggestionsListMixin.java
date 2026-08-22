@@ -31,6 +31,7 @@ public class SuggestionsListMixin {
     @Unique private int offsetBefore;
     @Unique private float scrollPixels;
     @Unique private int targetOffset;
+    @Unique private boolean masked;
 
     @Inject(method = "render", at = @At("HEAD"))
     private void renderHead(GuiGraphics graphics, int mouseX, int mouseY, CallbackInfo ci) {
@@ -42,16 +43,25 @@ public class SuggestionsListMixin {
             target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", ordinal = 4))
     private void mask(GuiGraphics graphics, int mouseX, int mouseY, CallbackInfo ci) {
         graphics.enableScissor(0, rect.getY(), graphics.guiWidth(), rect.getY() + rect.getHeight());
+        masked = true;
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", shift = At.Shift.AFTER,
             target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)I"))
     private void unmask(GuiGraphics graphics, int mouseX, int mouseY, CallbackInfo ci) {
-        graphics.disableScissor();
+        if (masked) {
+            graphics.disableScissor();
+            masked = false;
+        }
     }
 
     @Inject(method = "render", at = @At("TAIL"))
     private void renderTail(GuiGraphics graphics, int mouseX, int mouseY, CallbackInfo ci) {
+        if (masked) {
+            graphics.disableScissor();
+            masked = false;
+        }
+
         offset = targetOffset;
     }
 

@@ -42,6 +42,7 @@ public abstract class ChatComponentMixin {
     @Unique private int savedTick;
     @Unique private float matrixY;
     @Unique private GuiGraphics canvas;
+    @Unique private boolean masked;
 
     @Inject(method = "render", at = @At("HEAD"))
     private void renderHead(GuiGraphics graphics, int tickCount, int mouseX, int mouseY, CallbackInfo ci) {
@@ -61,7 +62,7 @@ public abstract class ChatComponentMixin {
         return Math.round(matrixY);
     }
 
-    @ModifyVariable(method = "render", at = @At("STORE"), ordinal = 7)
+    @ModifyVariable(method = "render", at = @At(value = "STORE", ordinal = 0), ordinal = 7)
     private int mask(int bottom) {
         if (isChatHidden()) {
             return bottom;
@@ -88,29 +89,36 @@ public abstract class ChatComponentMixin {
         }
 
         Smooth.scissor(canvas, -10, top, getWidth() + 10000, cut);
+        masked = true;
         return bottom;
     }
 
-    @ModifyVariable(method = "render", at = @At("STORE"), ordinal = 14)
+    @ModifyVariable(method = "render", at = @At(value = "STORE", ordinal = 0), ordinal = 14)
     private int hideFade(int opacity) {
         return 0;
     }
 
-    @ModifyVariable(method = "render", at = @At("STORE"), ordinal = 18)
+    @ModifyVariable(method = "render", at = @At(value = "STORE", ordinal = 0), ordinal = 18)
     private int shiftLine(int y) {
         return y - drawOffset();
     }
 
     @ModifyVariable(method = "render", at = @At("STORE"))
     private long unmask(long value) {
-        if (!isChatHidden()) {
+        if (masked) {
             canvas.disableScissor();
+            masked = false;
         }
         return value;
     }
 
     @Inject(method = "render", at = @At("TAIL"))
     private void renderTail(GuiGraphics graphics, int tickCount, int mouseX, int mouseY, CallbackInfo ci) {
+        if (masked) {
+            graphics.disableScissor();
+            masked = false;
+        }
+
         chatScrollbarPos = scrollBefore;
     }
 
