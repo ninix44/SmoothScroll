@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "package": "com.ninix.smoothscroll.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8.5",
+  "mixins": [],
+  "client": [
+    "ChatComponentMixin",
+    "SuggestionsListMixin",
+    "GuiMixin",
+    "MouseHandlerMixin",
+    "AbstractSelectionListMixin",
+    "AbstractContainerScreenMixin",
+    "CreativeModeInventoryScreenMixin",
+    "ItemPickerMenuMixin",
+    "ItemPickerMenuAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

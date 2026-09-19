@@ -1,0 +1,72 @@
+package com.ninix.smoothscroll.mixin;
+
+import com.ninix.smoothscroll.Rollover;
+import com.ninix.smoothscroll.Config;
+import com.ninix.smoothscroll.Smooth;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
+@Mixin(value = Gui.class, priority = 999)
+public class GuiMixin {
+
+    @Unique private static final int SLOT = 20;
+    @Unique private static final int EDGE = 4;
+
+    @Unique private float slotPixels;
+
+    @Redirect(method = "renderHotbar", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 1))
+    private void selectedSlot(GuiGraphics graphics, ResourceLocation texture,
+                              int x, int y, int width, int height) {
+        Player player = Minecraft.getInstance().player;
+
+        if (player == null) {
+            graphics.blitSprite(texture, x, y, width, height);
+            return;
+        }
+
+        int selected = player.getInventory().selected;
+        int target = (selected - Rollover.steps * 9) * SLOT - Rollover.steps * EDGE;
+        slotPixels = Smooth.approach(slotPixels, target, Config.hotbar);
+
+        if (Config.rollover) {
+            if (Math.round(slotPixels) < -10 - EDGE) {
+                slotPixels += 9 * SLOT + EDGE;
+                Rollover.steps--;
+            } else if (Math.round(slotPixels) > SLOT * 9 - 10 + EDGE) {
+                slotPixels -= 9 * SLOT + EDGE;
+                Rollover.steps++;
+            }
+        }
+
+        int shifted = x - selected * SLOT + Math.round(slotPixels);
+        int mirror = Math.round(slotPixels) < 0 ? 9 * SLOT + EDGE : -9 * SLOT - EDGE;
+        boolean wraps = Math.round(slotPixels) < 0 || Math.round(slotPixels) > SLOT * 8;
+
+        if (wraps) {
+            enableMask(graphics);
+        }
+
+        graphics.blitSprite(texture, shifted, y, width, height);
+
+        if (wraps) {
+            graphics.blitSprite(texture, shifted + mirror, y, width, height);
+            graphics.disableScissor();
+        }
+    }
+
+    @Unique
+    private void enableMask(GuiGraphics graphics) {
+        int x = graphics.guiWidth() / 2 - 91;
+        int y = graphics.guiHeight() - 22;
+
+        graphics.enableScissor(x - 1, y - 1, x + 183, y + 23);
+    }
+}
